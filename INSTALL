@@ -1,0 +1,20 @@
+$Id: INSTALL,v 1.4 2005/05/24 05:21:13 garbled Exp $
+
+Clusterit as of version 2.3, now uses autoconf/automake to build rather than
+Makefiles and a set of patches for various OS's.  You should simply be
+able to run:
+
+./configure
+make
+make install
+
+This should build and install clusterit in /usr/local/.  You can use the
+--prefix argument to configure to change that location.  Note that dvt/rvt
+requires X11 to build.  If you should wish to build without these, you
+should be able to simply delete them from the SUBDIRS lines in the toplevel
+Makefile.
+
+Please send any and all patches to my email if you make any fixes or
+enhancements to the source, I will gladly apply them.
+
+Tim Rightnour <root@garbled.net>

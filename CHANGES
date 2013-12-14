@@ -1,0 +1,210 @@
+$Id: CHANGES,v 1.20 2008/02/27 19:35:46 garbled Exp $
+
+* Release 2.5 *
+
+Add -b option to pcp.  This adds the ability to reverse the operation of pcp
+and use it to gather files from remote machines, rather than push to them.
+
+Add -t (test) option to all the utilities.  This allows the user to perform
+a quick port-is-active test on each node, before attempting to run the remote
+commands on those nodes.
+
+Switch the default RCMD's from rsh to ssh by popular demand.
+
+Change the RCMD_CMD and similar settings parsing to allow the user to set
+RCMD_CMD to something like "ssh -v" and have it work properly.
+
+Fix dsh interactive mode on linux.
+
+Fix timeout handling on linux, and fix the bug where -x didn't work if there
+were no groups present in the clusterfile.
+
+Run all of clusterit through coverity until all bugs were fixed (mostly memory
+leaks)
+
+Add dtop, a distributed top command.
+
+Add -s option to dsh.  This adds the ability to copy a script to a remote
+machine, execute it, and delete it, all in a single operation.
+
+Add RCP_CMD_ARGS processing to pcp.
+
+* Release 2.4 *
+
+Fix jsd to work properly on Linux.
+
+Fix stdin command mode on all the utilities.
+
+Make jsh and jsd more robust.  Keep jsd from permanently losing it's nodes.
+
+Fix pdf to work on Linux.
+
+Add a -v option to all programs to tell the user what version of
+ClusterIt they are running.  CVS will allways have _BETA tagged on the end,
+and it will be removed at release.
+
+Add RVT_CMD_ARGS to dvt, to allow passing of args to rvt
+
+Incorporate patches from debian xvt package into rvt:    
+Fix xvt manpage typos
+Add -rv (reverse-video) option 
+Better colormap handling
+All other patches were either irrelevant (makefile fixes, etc) or allready
+incorporated.
+
+Fix pdf to work on linux hosts
+
+Replace most instances of sprintf with snprintf. Did not touch rvt, as I would
+prefer to keep that as unmodified as possible, and most of them would not
+be easy to fix anyhow.
+
+Replace most instances of malloc with calloc.   Mostly to prevent any
+unanticipated wierdness, and a few of the mallocs were immediately followed
+by memset commands anyhow.
+
+Add RCMD_CMD_ARGS to most of the programs. This makes it easier to do
+things like run "ssh -4" as your RCMD_CMD.
+
+Stop allocating the command to be run on the remote end as buf[MAXBUF],
+instead compute it at runtime and dynamically allocate it to prevent
+possible overflow on a huge command.
+
+Fix a bug noted by Jot Powers, where trailing whitespace on a GROUP or LUMP
+entry would cause dsh -g to not match it.
+
+Fix a bug noted by John Bales  where linux machines often recieved truncated 
+output from the child ssh/rsh process.
+
+Fix bug where all the programs would mangle argv[0] for ps.
+
+* Release 2.3.1 *
+
+Fix a bug noted by James F Wilkus on OpenBSD where dsh would segv when
+reading the clusterfile.
+
+Convert seq over to rseq fully, not just for linux anymore.  Sigh.
+
+Fix the clusterit.spec file to work properly.  Tested on redhat
+
+* Release 2.3 *
+
+Made all remote commands use poll instead of a while loop to read the incoming
+stream of data from stdout and stderr.  This fixes bug where linux ssh will
+hang up.
+
+Fixed linux command line argument processing.
+
+Changed the -l <username> processing to invoke RCMD_CMD with user@host rather
+than -l user host.  This makes it much more reliable.
+
+Added an option to dsh to test remote ports before connecting.  This can be
+useful where a remote host might be down, and a long timeout would occur
+waiting for a response.
+
+Updated rvt to use a newer set of sources from xvt.  Fixes questionable
+licensing in xvt, and makes it more reliable.
+
+Converted makefiles to autoconf for ease of porting.  No more stupid patch
+sets which were a terrible burden to maintain and generate.
+
+ANSIfyed most of the code (other than rvt). Nobody uses KNF anymore.. sigh..
+
+Incorporated many patches sent by users from the internet.  I have
+unfortunately lost track of what patch came from who, but thier help is
+greatly appreciated.  Most of these patches either fixed bugs, added stability
+or fixed porting bugs.  The xvt conversion was based mainly on a patch sent
+in by a user.  My thanks go out to those of you who have sent them in.
+
+# changes since 2.2
+
+* Release 2.2 *
+Missing this data, sorry
+* Release 2.0 *
+
+Added dvt and rvt..  an interactive form of dsh with xterms.
+
+Fixed a bug in jsd and dsh where it would lock up running ssh waiting for
+input.
+
+Add a jsd dir, and move jsd.c from dsh to the jsd dir.  Add nearly complete
+jsh program, and jcommon.[ch].
+
+Add new common subdir and move a tonnage of crap in there.  Mainly
+common.c, common.h and strsep.c.
+
+Fix horrid bug in dsh where dsh | more would lock terminals up.  Still
+need to fix in seq, run, probably pcp.
+
+Add <netinet/if_ether.h> to barrierd.c to shut AIX C up.
+
+Lots of minor bugfixes, mostly dealing with failures to open files, opening
+0 byte clusters, etc etc..
+
+Pcp was still using it's own code to parse strings and groups.  Fully rewrote
+the back-end internals to use the new linked-list stuff, and utilize common.c.
+Pcp's code is now virtually identical to dsh, whereas before it had diverged
+significantly.
+
+Error handling has finally graduated to where I no longer feel that it
+"needs work".
+
+Fix a place where malloced data was strcatted to without being bzeroed.
+
+Group, exclusion and -w nodes are now dynamicly generated arrays.  Removes
+the MAX_GROUPS restrictions.
+
+The nodelist and grouplists are no longer maintained in any way similar to
+the original setup.  Nodes are not stored in a flat array of nodes, with a
+corresponding flat array of group names.  Nodes are now stores in a linked
+list of machines to run on.  Nodes which are not to be run on, are not
+included in this list, so the back-end routines only need to execute code
+on every node they are handed in the linked list.  This is all handled in
+common.c now.  This removes the all compile time restrictions on MAXNODES,
+allowing the program to scale much more efficiently.
+
+# changes since 1.3
+* Release 1.3 *
+
+Break dsh, run and seq's common code into a common.c and common.h file,
+so I don't forget to add options to run and seq when fixing dsh.  Also, fix
+some locations where run and seq were out of sync slightly.
+
+Fix a bug in pdf where if the -m option was used, filesystems at 100%
+would not be displayed.
+
+Handle ^C's correctly.  If a remote process is hung, and it is the current
+process being read, you may ^C it, and the interrupt will be sent to the
+remote process.  This would be just like hitting ^C on the remote end, 
+and will only affect the process you are currently reading from.
+
+Added ability to pcp multiple files and wildcards to remote hosts.
+
+Made pcp and dsh compile on an ANSI compiler (IBM C, SUN C)
+
+Make output from dsh look nicer, and format well.
+
+# changes since 1.2
+* Release 1.2 *
+
+Bug fixes in dsh to deal with the start of a fangroup, and
+a race condition, where large output would cause it to hang
+waiting for descriptors to die.
+
+Fix a bug in dsh that caused it to lose data on AIX, and 
+dump core when transitioning fangroups.
+
+Added the rungroup, and exclusion commands to all the programs.
+
+Fix pdf to work on a heterogeneous cluster.
+
+Add concurrency to pcp, to eliminate startup latency lossage.
+
+Take some of the work out of the main loop in pcp, and only do it
+once.  This should speed up serial copies by small amount.
+
+Fix seq, and run to actually work.  Use a semi-atomic test and set
+to create the seq file, so it actually runs through the nodes, rather
+than execute on the same one over and over.
+
+* Release 1.1 *
+#no data previous to 1.1.  Sorry.

@@ -1,0 +1,298 @@
+.\"	$Id: pcp.1,v 1.18 2007/07/03 18:33:37 garbled Exp $
+.\"
+.\" Copyright (c) 1998, 1999, 2000
+.\"	Tim Rightnour.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 3. All advertising materials mentioning features or use of this software
+.\"    must display the following acknowledgment:
+.\"	This product includes software developed by Tim Rightnour for
+.\"	The NetBSD Foundation, Inc.
+.\" 4. The name of Tim Rightnour may not be used to endorse or promote 
+.\"    products derived from this software without specific prior written 
+.\"    permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY TIM RIGHTNOUR ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL TIM RIGHTNOUR BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\" The following requests are required for all man pages.
+.Dd January 11, 2007
+.Dt PCP 1
+.Sh NAME
+.Nm pcp
+.Nd copy a file to a cluster of machines
+.Sh SYNOPSIS
+.Nm
+.Op Fl bceprtv
+.Op Fl f Ar fanout
+.Op Fl g Ar rungroup1,...,rungroupN
+.Op Fl o Ar porttimeout
+.Op Fl n Ar portnum
+.Op Fl w Ar node1,...,nodeN
+.Op Fl x Ar node1,...,nodeN
+.Ar source_file1
+.Op source_file2 ... source_fileN
+.Op destination file
+.Sh DESCRIPTION
+The 
+.Nm
+utility can be used to copy a file, or directory to a group of machines.
+The group of machines can be listed on the command line, or default to
+the environment setting
+.Ev CLUSTER
+.
+The following options are available:
+.Bl -tag -width www
+.It Fl b
+This flag causes
+.Nm
+to copy files in reverse, or backwards.  Instead of copying a single file
+from a single machine, out to the list of target machines, the command will
+copy a file from all target machines, to the local machine, and name it
+file.nodename.  This can be used to gather configuration files from a group
+of machines and store them locally.
+.It Fl c
+Normally 
+.Nm 
+copies files serially, to all the nodes specified.  When the
+.Fl c
+option is used,
+.Nm
+will copy the files in parallel to the nodes, subject to the
+.Ev FANOUT
+environment setting and
+.Fl f
+option.  Smaller files will benefit greatly from parallel copies,
+due to reduced latency in the initial authentication, and connection.
+However, large files, especially on a shared ethernet, will suffer
+tremendous speed degredation, because of the collisions the transfers
+will create.  This effect can be reduced, by lowering the fanout size
+of the cluster.
+.It Fl e
+Unless the
+.Fl e
+option is specified, output from remote commands will not be reported 
+to the user.
+.It Fl p
+The
+.Fl p
+option causes
+.Nm
+to attempt to preserve (duplicate) in its copies the modification
+times and modes of the source files, ignoring the
+.Ar umask  .
+By default, the mode and owner of
+.Ar file2
+are preserved if it already existed; otherwise the mode of the source file
+modified by the
+.Xr umask  2
+on the destination host is used.
+.It Fl r
+If any of the source files are directories,
+.Nm
+copies each subtree rooted at that name; in this case
+the destination must be a directory.
+.It Fl v
+Prints the version of ClusterIt to the stdout, and exits.
+.It Fl f
+If the
+.Fl f
+option is specified, followed by a number, it sets the fanout size of 
+the cluster.  The fanout size is the number of nodes a command will
+run on in parallel at one time.  Thus a 80 node cluster, with a fanout 
+size of 64, would run 64 nodes in parallel, then, when all have
+finished, it would execute the command on the last 16 nodes.  The
+fanout size defaults to 64.  This option overrides the
+.Ev FANOUT
+environment variable.
+.It Fl o
+The
+.Fl o
+option is used to set the timeout in seconds to be used when testing remote
+connections.  The default is five seconds.
+.It Fl n
+The
+.Fl n
+option can be used to set the port number that testing should occur on when
+testing remote connections.  The default behavior is to guess based on the
+remote command name.
+.It Fl t
+The
+.Fl t
+option causes
+.Nm
+to attempt a connection test to each node prior to attempting to copy the
+remote file.  If the test fails for any reason, the remote command will
+not be attempted.  This can be useful when clusterfiles have suffered bitrot
+and some nodes no longer exist, or might be down for maintenance.  The default
+timeout is 5 seconds.  The timeout can be changed with the
+.Fl o
+option.
+.Nm
+will attempt to guess the port number of the remote service based on your
+.Ev RCMD_CMD
+setting.  It knows about scp and rcp.  If
+.Nm
+fails to guess your port correctly, you may use the
+.Fl n
+argument to set the remote port number.  If the
+.Ev RCMD_TEST
+environment variable exists, the testing will automatically take place.
+.It Fl g
+If the
+.Fl g
+option is specified, followed by a comma separated list of group
+names, the command will only be run on that group of nodes.  A node
+may be a part of more than one group if desired, however running
+without the
+.Fl g
+option will run the command on the same node as many times as it
+appears in the file specified by the
+.Ev CLUSTER
+environment variable.  This option is silently ignored if used with the
+.Fl w
+option.
+.It Fl w
+If the
+.Fl w
+option is specified, followed by a comma delimited list of machine names,
+the
+.Ar command
+will be run on each node in the list.  Without this flag,
+.Nm
+runs on the nodes listed in the file pointed to by the
+.Ev CLUSTER
+environment variable.
+.It Fl x
+The
+.Fl x
+option can be used to exclude specific nodes from the cluster.  The 
+format is the same as the
+.Fl w
+option, a comma delimited list of machine names.  This option is
+silently ignored if used with the
+.Fl w
+option.
+.El
+.Sh ENVIRONMENT
+.Nm
+utilizes the following environment variables:
+.Bl -tag -width "RCP_CMD"
+.It Ev CLUSTER
+Contains a filename, which is a newline separated list of nodes
+in the cluster.
+.It Ev RCP_CMD
+Command to use to copy files to remote machines.  The command chosen must
+be able to connect with no password to the remote host.  Defaults to
+.Ic rcp .
+.It Ev RCP_CMD_ARGS
+Arguments to pass to the remote copy command. Defaults to none.
+.It Ev RCP_USER
+The username to connect to remote machines as by default.
+.It Ev FANOUT
+When set, limits the maximum number of concurrent commands sent at
+once.  This can be used to keep from overloading a small host when
+sending out commands in parallel.  Defaults to 64.  This environment
+setting can be overridden by the
+.Fl f
+option.
+.It Ev RCMD_PORT
+The port number used to test remote connections.  See the
+.Fl n
+flag.
+.It Ev RCMD_TEST
+When set,
+.Nm
+will automatically test all hosts before launching the remote command. See the
+.Fl t
+option for more information.
+.It Ev RCMD_TEST_TIMEOUT
+The timeout in seconds to use when testing for remote connections.
+.El
+.\" .Sh FILES
+.Sh EXAMPLES
+The command:
+.Pp
+pcp file
+.Pp
+will copy the file 
+.Sq file 
+to the home directory of the current user on
+all machines listed in the file pointed to by the
+.Ev CLUSTER
+environment setting.
+.Pp
+.Pp
+The command:
+.Pp
+pcp -w hadar,rigel file
+.Pp
+will copy the file
+.Sq file
+to the home directory of the current user on the machines
+.Sq hadar
+and
+.Sq rigel .
+.Pp
+.Pp
+The command:
+.Pp
+pcp -w hadar,rigel /usr/bin/foo /usr/local/bin/foo
+.Pp
+will copy the file
+.Sq /usr/bin/foo
+to
+.Sq /usr/local/bin/foo
+on the machines
+.Sq hadar
+and
+.Sq rigel .
+.Pp
+.Pp
+The command:
+.Pp
+pcp -bw hadar,rigel /etc/passwd hello
+.Pp
+will copy the file
+.Sq /etc/passwd
+from both hadar and rigel, and name it
+.Sq hello.hadar
+and
+.Sq hello.rigel
+in the current working directory.
+.Pp
+.Pp
+.Sh DIAGNOSTICS
+Exit status is 0 on success, 1 if an error occurs.
+.Sh SEE ALSO
+.Xr cp 1 ,
+.Xr dsh 1 ,
+.Xr rcp 1 ,
+.Xr kerberos 3 ,
+.Xr hosts.equiv 5 ,
+.Xr rhosts 5
+.Sh HISTORY
+The
+.Nm
+command appeared in clusterit 1.0. It is based on the
+.Nm
+command in IBM PSSP.
+.Sh AUTHOR
+.Nm Pcp
+was written by Tim Rightnour.

@@ -1,10 +1,5 @@
 ***************************************************************************
-(C)MiB <me@not-me.me>
-
-clusterit-mib
-=============
-
-Modified version of the ClusterIt-toolset developed by Tim Rightnour
+(C)Michael Bruening (MiB) <me@not-me.me>
 
 Welcome to "ClusterIt (MiB)" which is based on the great work of
 Tim Rightnour (root *at* garbled.net). His sources and documentation are
@@ -31,5 +26,5 @@ The programs have successfully been compiled and tested on:
 * TinyCore Linux 3.0.21 (x86_64, GCC 4.6.1)
 * Lubuntu Linux 3.8.0-26 (x86_64, GCC 4.7.3)
 
-(C)MiB <me@not-me.me>
+(C)Michael Bruening (MiB) <me@not-me.me>
 ***************************************************************************

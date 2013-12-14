@@ -1,0 +1,201 @@
+.\" $Id: run.1,v 1.13 2007/01/10 20:36:11 garbled Exp $
+.\" Copyright (c) 1998, 1999, 2000
+.\"	Tim Rightnour.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 3. All advertising materials mentioning features or use of this software
+.\"    must display the following acknowledgment:
+.\"	This product includes software developed by Tim Rightnour.
+.\" 4. The name of Tim Rightnour may not be used to endorse or promote 
+.\"    products derived from this software without specific prior written 
+.\"    permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY TIM RIGHTNOUR ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL TIM RIGHTNOUR BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\" The following requests are required for all man pages.
+.Dd January 10, 2007
+.Dt RUN 1
+.Sh NAME
+.Nm run
+.Nd run a command on a machine at random
+.Sh SYNOPSIS
+.Nm
+.Op Fl aeiqtv
+.Op Fl g Ar rungroup1,...,rungroupN
+.Op Fl l Ar username
+.Op Fl o Ar porttimeout
+.Op Fl p Ar portnum
+.Op Fl w Ar node1,...,nodeN
+.Op Fl x Ar node1,...,nodeN
+.Op Ar command ...
+.Sh DESCRIPTION
+The 
+.Nm
+utility can be used to run a command, or group of commands on a cluster of 
+machines.  The command or commands are run on a single node in the cluster,
+which is chosen at random.
+The following options are available:
+.Bl -tag -width www
+.It Fl a
+The
+.Fl a
+option modifies the behavior of seq when dealing with stdin.  Normally 
+all commands from stdin are run on the same machine.  Specifying the
+.Fl a
+option causes each command to be run on a random node.
+.It Fl e
+Unless the
+.Fl e
+option is specified, stderr from remote commands will not be reported
+to the user.
+.It Fl i
+The
+.Fl i
+option will list information about the current cluster, and command groupings.
+It will also show you which command you are about to run, and your username if
+specified with the
+.Fl l
+option.
+.It Fl q
+The
+.Fl q
+option does not issue any commands, but displays information about the cluster.
+.It Fl v
+Prints the version of ClusterIt to the stdout, and exits.
+.It Fl g
+If the
+.Fl g
+option is specified, followed by a comma separated list of group
+names, the command will only be run on that group of nodes.  A node
+may be a part of more than one group if desired, however running without the
+.Fl g
+option will run the command on the same node as many times as it appears in the
+file specified by the
+.Ev CLUSTER
+environment variable.  This option is silently ignored if used with the
+.Fl w
+option.
+.It Fl l
+If the
+.Fl l
+option is specified, followed by a username, the commands will be run
+under that userid on the remote machines.  Consideration must be taken 
+for proper authentication, for this to work.
+.It Fl o
+The
+.Fl o
+option is used to set the timeout in seconds to be used when testing remote
+connections.  The default is five seconds.
+.It Fl p
+The
+.Fl p
+option can be used to set the port number that testing should occur on when
+testing remote connections.  The default behavior is to guess based on the
+remote command name.
+.It Fl t
+The
+.Fl t
+option causes
+.Nm
+to attempt a connection test to each node prior to attempting to run the
+remote command.  If the test fails for any reason, the remote command will
+not be attempted.  This can be useful when clusterfiles have suffered bitrot
+and some nodes no longer exist, or might be down for maintenance.  The default
+timeout is 5 seconds.  The timeout can be changed with the
+.Fl o
+option.
+.Nm
+will attempt to guess the port number of the remote service based on your
+.Ev RCMD_CMD
+setting.  It knows about ssh and rsh.  If
+.Nm
+fails to guess your port correctly, you may use the
+.Fl p
+argument to set the remote port number.  If the
+.Ev RCMD_TEST
+environment variable exists, the testing will automatically take place.
+.It Fl w
+If the
+.Fl w
+option is specified, followed by a comma delimited list of machine names,
+the
+.Ar command
+will be run on each node in the list.  Without this option,
+.Nm
+runs on the nodes listed in the file pointed to by the
+.Ev CLUSTER
+environment variable.
+.It Fl x
+The
+.Fl x
+option can be used to exclude specific nodes from the cluster.  The
+format is the same as
+the
+.Fl w
+option, a comma delimited list of machine names.  This option is
+silently ignored if used with the
+.Fl w
+option.
+.El
+.Sh ENVIRONMENT
+.Nm
+utilizes the following environment variables.
+.Bl -tag -width "RCMD_CMD_ARGS"
+.It Ev CLUSTER
+Contains a filename, which is a newline separated list of nodes
+in the cluster.
+.It Ev RCMD_CMD
+Command to use to connect to remote machines.  The command chosen must
+be able to connect with no password to the remote host.  Defaults to
+.Ic rsh
+.It Ev RCMD_CMD_ARGS
+Arguments to pass to the remote shell command.  Defaults to none.
+.It Ev RCMD_USER
+The username to connect to remote machines as by default.
+.It Ev RCMD_PORT
+The port number used to test remote connections.  See the
+.Fl p
+flag.
+.It Ev RCMD_TEST
+When set,
+.Nm
+will automatically test all hosts before launching the remote command. See the
+.Fl t
+option for more information.
+.It Ev RCMD_TEST_TIMEOUT
+The timeout in seconds to use when testing for remote connections.
+.El
+.\" .Sh FILES
+.Sh DIAGNOSTICS
+Exit status is 0 on success, 1 if an error occurs.
+.Sh SEE ALSO
+.Xr dsh 1 ,
+.Xr rsh 1 ,
+.Xr seq 1 ,
+.Xr kerberos 3 ,
+.Xr hosts.equiv 5 ,
+.Xr rhosts 5
+.Sh HISTORY
+The
+.Nm
+command appeared in clusterit 1.1.
+.Sh AUTHOR
+.Nm Run
+was written by Tim Rightnour.

@@ -1,0 +1,42 @@
+***************************************************************************
+(C)Michael Bruening (MiB) <me@not-me.me>
+
+CHANGELOG Version 2.6 (MiB)
+
+"dsh, pcp, dvt":
+The tools "dsh, pcp, dvt" have been modified to allow the selection of the clusterfile containing
+servergroup-definitions not only be the environment variable CLUSTER, they also look for
+a file "clusterit" in the working directory and/or a file pointed to by commandline option "-c clusterfile".
+To have this option consistent, the following 2 options had to be renamed for command "pcp":
+-c "concurrent" was renamed to -p "parallel", and
+-p "preserve file mode" was renamed to -k "keep file mode" 
+
+Order in which a "clusterfile" containing servergroup-definitions is searched for:
+1. given by commandline option "-c<clusterfile>"
+2. file "clusterit" in the current working directory
+3. file pointed to by environment variable "CLUSTER"
+
+The programs "dsh", "pcp" and "dvt" accept individual port numbers when connecting via SSH.
+The clusterfile may contain servernames as follows: 
+GROUP:servers
+servername1
+servername2:portnumber1
+servername3:portnumber2
+
+This does not work for servernames given on the commandline via options "-w" or "-x". 
+
+"dsh"
+Added option "-S <separator>" to enable the selection of a different (or no) separating character
+between the hostnames and the resulting output. Might be useful for the creation of CSV-files.
+
+"barrier"
+Changed option "-q" (=revert quiet-mode) to "-d" (=debug)
+
+"barrierd"
+Write statusmessages via syslog. Daemon logs number of servers to syncronize for given key as follows:
+Jan 17 21:16:49 tosh barrierd[25152]: [ID 422220 daemon.info] got key test from 127.0.0.1 (1 of 2)
+Jan 17 21:16:59 tosh barrierd[25152]: [ID 422220 daemon.info] got key test from 127.0.0.1 (2 of 2)
+Jan 17 21:16:59 tosh barrierd[25152]: [ID 180927 daemon.info] synced 2 nodes with key: test
+
+(C)Michael Bruening (MiB) <me@not-me.me>
+***************************************************************************

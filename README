@@ -1,0 +1,103 @@
+$Id: README,v 1.11 2008/02/27 19:35:46 garbled Exp $
+
+Welcome to clusterit-2.5 !
+
+This is a collection of clustering tools, to turn your ordinary
+everyday pile of UNIX workstations into a speedy parallel beast.
+
+To get started quickly, please read the file INSTALL.
+
+Initially this work was based on the work of IBM's PSSP, and copied
+heavily from the ideas there.  Its also lightly based on the work
+pioneered in GLUnix.  I've decided to simplify, and complexify it
+however:
+
+Glunix is a monstrosity.  It allows better control over the
+individual nodes, and much better load sharing.  However I'm convinced
+alot of the speed advantages of having a parallel cluster are lost with
+the incredible overhead of running the glunix master and daemon services
+on a host.  Glunix does however offer a real paralell programming
+environment.  Something which is totally beyond the scope of this package.
+
+PSSP is also a very powerful set of tools.  Not much more than a bunch
+of staples written in perl, they provide an incredible tool for tying
+an unwieldy number of UNIX machines into one fast demon of an MPP.
+
+The advantages of both systems are central control of a large number of
+machines.  Unfortunately, they all have dwarbacks.. as does my solution.
+
+What my solution provides:
+
+*Fast* parallel execution of remote commands.
+	C vs. Perl.  You do the math.
+
+Heterogenous cluster makeup.
+	This makes it very easy to administer a large number of machines,
+of varying architectures, and operating systems.  The fact that my tools are
+completely architecture independent, make it possible to dsh commands out
+to machines that aren't even running the same OS!  This can be useful for a
+variety of mass administration tasks an admin may have to undertake.
+
+Choice of authentication.
+	IBM forces you to use kerberos 4 for authentication on the SP's.
+This is actually fine for a closed environment like an SP, but for something
+to be run on just a stack of otherwise useful boxes, you need more freedom.
+This suite allows you to do whatever you like.. ssh, kerberos, .rhosts.
+Whatever suits your security and speed requirements best.
+
+Sequential node, and random node execution
+	The idea here is that these dsh-like programs allow you to do something
+akin to load balanced scripting.  For example one could set up an NFS shared
+build directory, and issue the command
+make -j4 CC='seq gcc'
+Which would execute a build in paralell, on 4 nodes in your cluster, assigning
+processes to each node in sequence.   The run command is equivilent to saying:
+"I dont care where you run, just run and tell me how things turned out."
+
+Job Scheduled Shell:
+
+The jsd/jsh pair of programs was specifically designed for parallel 
+compiling.  The idea is that the user sets up a benchmark program of some 
+sort, which is executed by the jsd program.  This benchmark then ranks 
+the machines in the cluster by performance.  When the jsh command is run, 
+the fastest machine will be given the command to execute.  At the same 
+time, jsd keeps track of the node being in use, and refuses to give other 
+commands to it, until it completes.  In this way, you can avoid the 
+problem where a single slower machine tends to accumulate much work 
+because it isn't finishing quickly enough.  It also tends to favor the 
+fastest machine in a cluster, giving it most of the work in a parallel 
+compile.
+
+Barrier sync for shell scripting.
+	This is a new idea.  The barrier mechanism consists of a daemon run on
+a host, and a client which can be used to barrier sync with.  An example of use
+would be:
+
+#!/bin/sh
+do something
+barrier -h host -k token -s 5
+do something else
+
+Then, you would dsh the execution of this script to your hosts.  The barrier
+makes sure that all hosts have completed the first "something" before the
+continue on to the next something.  The -s, is the level of paralellism for
+the script, ie: how many processes to wait for before continuing.
+
+dvt:
+
+This is a parallel interactive execution environment.  The user is given 
+windows for each host in the cluster, and a central management window.  
+Keystrokes typed on the central management window, will be relayed to all 
+of the subordinate windows. This allows the user to vi a file on 20 
+machines simultaneously, for example.  You can also select a window, and 
+use it like a normal xterm, to perform actions on just that host.
+
+What my solution does not provide:
+
+A parallel programming API
+	Use MPI, or PVM, or whatever for that.. thats outside the scope of
+this suite.
+
+Please visit the ClusterIt homepage for more information
+http://clusterit.sourceforge.net/
+Tim Rightnour <root@garbled.net>
